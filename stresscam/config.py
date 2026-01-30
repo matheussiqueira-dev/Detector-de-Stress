@@ -7,13 +7,21 @@ class Config:
     fps: int = 30
     device_index: int = 0
     device_name: str | None = None  # ex: "video=BRIO 305" (DirectShow)
+    mirror: bool = True  # espelhar câmera melhora UX, pode ser desligado
+    buffer_size: int | None = 1  # 1 reduz latência; None mantém padrão do backend
     frame_width: int | None = None
     frame_height: int | None = None
+    normalize_light: bool = True  # equalização adaptativa por CLAHE
 
     # pré-processamento
     clahe_clip: float = 2.0
     clahe_tiles: tuple[int, int] = (8, 8)
     bbox_smooth_alpha: float = 0.2
+    low_light_thresh: int = 60  # média de luminância 0-255 para alertar pouca luz
+    center_tolerance: float = 0.18  # fração da largura/altura para alertar rosto fora do centro
+    high_sensitivity: bool = True  # modo demonstração mais responsivo (exagerado)
+    demo_gain: float = 2.0  # ganho aplicado à variação do score no modo demo
+    graph_bg: tuple[int, int, int] = (10, 10, 20)  # fundo do gráfico (BGR)
 
     # janela temporal
     win_size_sec: int = 10

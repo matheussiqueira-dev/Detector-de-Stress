@@ -7,24 +7,44 @@ import time
 
 from .config import Config
 
+_CLAHE_CACHE: dict[tuple[float, tuple[int, int]], cv2.CLAHE] = {}
+
 
 class VideoStream:
     def __init__(self, cfg: Config):
+        cv2.setUseOptimized(True)
+        self.cfg = cfg
         source = cfg.device_name if cfg.device_name else cfg.device_index
         self.cap = cv2.VideoCapture(source, cv2.CAP_DSHOW)
         self.cap.set(cv2.CAP_PROP_FPS, cfg.fps)
+        if cfg.buffer_size is not None:
+            self.cap.set(cv2.CAP_PROP_BUFFERSIZE, cfg.buffer_size)
         if cfg.frame_width:
             self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, cfg.frame_width)
         if cfg.frame_height:
             self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cfg.frame_height)
         if not self.cap.isOpened():
             raise RuntimeError(f"Não consegui abrir a câmera: {source}")
+        self._failures = 0
 
     def read(self):
         ok, frame = self.cap.read()
-        if not ok:
-            raise RuntimeError("Falha ao ler da webcam.")
-        return cv2.flip(frame, 1)  # espelhar melhora UX
+        if not ok or frame is None:
+            self._failures += 1
+            if self._failures >= 3:
+                raise RuntimeError("Falha ao ler da webcam.")
+            time.sleep(0.02)  # breve backoff antes de tentar novamente
+            return self.read()
+        self._failures = 0
+        if self.cfg.mirror:
+            frame = cv2.flip(frame, 1)
+        return frame
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.release()
 
     def release(self):
         self.cap.release()
@@ -117,7 +137,19 @@ def normalize_lighting(frame, cfg: Config):
     # equalização adaptativa no canal de luminância para reduzir variação de luz
     ycrcb = cv2.cvtColor(frame, cv2.COLOR_BGR2YCrCb)
     y, cr, cb = cv2.split(ycrcb)
-    clahe = cv2.createCLAHE(clipLimit=cfg.clahe_clip, tileGridSize=cfg.clahe_tiles)
+    clahe = _CLAHE_CACHE.setdefault(
+        (cfg.clahe_clip, cfg.clahe_tiles),
+        cv2.createCLAHE(clipLimit=cfg.clahe_clip, tileGridSize=cfg.clahe_tiles),
+    )
     y_eq = clahe.apply(y)
     merged = cv2.merge((y_eq, cr, cb))
     return cv2.cvtColor(merged, cv2.COLOR_YCrCb2BGR)
+
+
+def preprocess_frame(frame, cfg: Config):
+    """
+    Centraliza pré-processamentos configuráveis para reuso.
+    """
+    if cfg.normalize_light:
+        frame = normalize_lighting(frame, cfg)
+    return frame

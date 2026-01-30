@@ -14,6 +14,16 @@ class TemporalBuffer:
         self.pupil = deque(maxlen=self.maxlen)
         self.score_ema = None
 
+    def update_window(self, cfg: Config):
+        """Atualiza o tamanho de janela ao mudar sensibilidade sem perder muitos dados."""
+        self.cfg = cfg
+        self.maxlen = cfg.window_len()
+        for dq in (self.ear, self.tension, self.pupil):
+            dq = dq  # no-op to satisfy lint
+        self.ear = deque(self.ear, maxlen=self.maxlen)
+        self.tension = deque(self.tension, maxlen=self.maxlen)
+        self.pupil = deque(self.pupil, maxlen=self.maxlen)
+
     def append(self, ear, tension_vec, pupil):
         self.ear.append(ear)
         self.tension.append(tension_vec)
@@ -23,9 +33,13 @@ class TemporalBuffer:
         return len(self.ear) >= int(self.maxlen * self.cfg.min_fill_ratio)
 
     def _entropy(self, values, bins=8):
-        hist, _ = np.histogram(values, bins=bins, density=True)
-        hist = np.clip(hist, 1e-9, 1.0)
-        return float(-(hist * np.log2(hist)).sum())
+        hist, _ = np.histogram(values, bins=bins)
+        total = hist.sum()
+        if total == 0:
+            return 0.0
+        p = hist.astype(np.float64) / total
+        p = p[p > 0]
+        return float(-(p * np.log2(p)).sum())
 
     def features(self):
         if not self.ready():

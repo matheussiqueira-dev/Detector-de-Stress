@@ -1,0 +1,22 @@
+2026-01-30 08:05:00,906 [INFO] Abrindo câmera...
+2026-01-30 08:05:02,170 [INFO] server listening on 0.0.0.0:8765
+2026-01-30 08:05:18,468 [INFO] Baseline treinado com 82 amostras
+2026-01-30 08:21:45,982 [INFO] Encerrado pelo usuário.
+2026-01-30 08:21:46,482 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-3' coro=<IocpProactor.accept.<locals>.accept_coro() running at C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\asyncio\windows_events.py:580> wait_for=<_OverlappedFuture cancelled>>
+2026-01-30 08:23:36,375 [INFO] Abrindo câmera...
+2026-01-30 08:23:51,587 [INFO] Abrindo câmera...
+2026-01-30 08:23:52,699 [INFO] server listening on 0.0.0.0:8765
+2026-01-30 08:24:07,935 [INFO] Modo demonstração desativado (sensibilidade normal).
+2026-01-30 08:24:08,933 [INFO] Baseline treinado com 226 amostras
+2026-01-30 08:24:11,347 [INFO] Modo demonstração ativado (alta sensibilidade).
+2026-01-30 08:25:17,284 [INFO] Encerrado pelo usuário.
+2026-01-30 08:25:18,166 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-3' coro=<IocpProactor.accept.<locals>.accept_coro() running at C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\asyncio\windows_events.py:580> wait_for=<_OverlappedFuture cancelled>>
+2026-01-30 08:59:38,239 [INFO] Abrindo câmera...
+2026-01-30 08:59:52,486 [INFO] Abrindo câmera...
+2026-01-30 08:59:53,730 [INFO] server listening on 0.0.0.0:8765
+2026-01-30 09:00:09,996 [INFO] Baseline treinado com 166 amostras
+2026-01-30 09:07:47,281 [INFO] Encerrado pelo usuário.
+2026-01-30 09:07:48,173 [ERROR] Task was destroyed but it is pending!
+task: <Task pending name='Task-3' coro=<IocpProactor.accept.<locals>.accept_coro() running at C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\asyncio\windows_events.py:580> wait_for=<_OverlappedFuture cancelled>>

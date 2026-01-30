@@ -61,6 +61,8 @@ class ScoreServer:
         self.period = 1.0 / hz if hz > 0 else 0.2
         self._loop = None
         self._ws_server = None
+        self._stop_future = None
+        self._http_server = None
         self._threads = []
 
     def start(self):
@@ -68,9 +70,18 @@ class ScoreServer:
         self._start_ws()
 
     def stop(self):
-        # HTTP server stops when process ends; WS loop should be stopped
+        if self._http_server:
+            self._http_server.shutdown()
+            self._http_server.server_close()
         if self._loop and self._loop.is_running():
-            self._loop.call_soon_threadsafe(self._loop.stop)
+            def _stop():
+                if self._stop_future and not self._stop_future.done():
+                    self._stop_future.set_result(None)
+                self._loop.stop()
+            self._loop.call_soon_threadsafe(_stop)
+        # aguarda threads fecharem sem travar encerramento
+        for t in self._threads:
+            t.join(timeout=1.0)
 
     def update(self, score, trend):
         self.store.set(score, trend)
@@ -79,8 +90,8 @@ class ScoreServer:
     def _start_http(self):
         handler = type("Handler", (RESTHandler,), {})
         handler.store = self.store
-        server = HTTPServer(("0.0.0.0", self.http_port), handler)
-        t = threading.Thread(target=server.serve_forever, daemon=True)
+        self._http_server = HTTPServer(("0.0.0.0", self.http_port), handler)
+        t = threading.Thread(target=self._http_server.serve_forever, daemon=True)
         t.start()
         self._threads.append(t)
 
@@ -94,13 +105,16 @@ class ScoreServer:
         except websockets.ConnectionClosed:
             return
 
+    async def _ws_main(self):
+        async with websockets.serve(self._ws_handler, "0.0.0.0", self.ws_port):
+            self._stop_future = asyncio.get_running_loop().create_future()
+            await self._stop_future
+
     def _start_ws(self):
         def runner():
             self._loop = asyncio.new_event_loop()
             asyncio.set_event_loop(self._loop)
-            self._ws_server = websockets.serve(self._ws_handler, "0.0.0.0", self.ws_port)
-            self._loop.run_until_complete(self._ws_server)
-            self._loop.run_forever()
+            self._loop.run_until_complete(self._ws_main())
 
         t = threading.Thread(target=runner, daemon=True)
         t.start()

@@ -1,0 +1,14 @@
+C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\runpy.py:126: RuntimeWarning: 'stresscam.app' found in sys.modules after import of package 'stresscam', but prior to execution of 'stresscam.app'; this may result in unpredictable behaviour
+  warn(RuntimeWarning(msg))
+Traceback (most recent call last):
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "C:\Users\mathe\OneDrive\Documentos\Programação\Detecção de Stress\stresscam\app.py", line 100, in <module>
+    run()
+  File "C:\Users\mathe\OneDrive\Documentos\Programação\Detecção de Stress\stresscam\app.py", line 29, in run
+    stream = VideoStream(cfg)
+  File "C:\Users\mathe\OneDrive\Documentos\Programação\Detecção de Stress\stresscam\video.py", line 27, in __init__
+    raise RuntimeError(f"Não consegui abrir a câmera: {source}")
+RuntimeError: Não consegui abrir a câmera: video=BRIO 305 

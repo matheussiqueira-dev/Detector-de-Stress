@@ -27,6 +27,11 @@ streamlit run stresscam/streamlit_app.py
 - REST: `GET http://localhost:8000/score` → `{"score":0.53,"trend":-0.01,"ts":1738280000.1}`
 - WebSocket: `ws://localhost:8765/` envia o mesmo JSON periodicamente (5 Hz). Útil para dashboards externos.
 
+### Atalhos na janela OpenCV
+- `q`: encerra a captura (único modo de sair; não há timeout automático).
+- `s`: salva o frame atual como `frame_XXX.png` para análise.
+- `d`: ativa/desativa o **Modo Demonstração (alta sensibilidade)**.
+
 ## Módulos
 - `stresscam/video.py`: captura, normalização de luz, detecção facial (MediaPipe) e suavização de bbox.
 - `stresscam/features.py`: sinais visuais (EAR, tensão facial geométrica, área pupilar).
@@ -42,6 +47,9 @@ Notas:
 - Usa baseline inicial (`Config.baseline_sec`) para normalizar por indivíduo.
 - Saída é contínua e suavizada por EMA (`ema_alpha`).
 - Não é diagnóstico médico; sensível a iluminação e qualidade da câmera.
+- Equalização de iluminação (CLAHE) e espelhamento podem ser ligados/desligados (`Config.normalize_light` / `Config.mirror` ou checkboxes no Streamlit).
+- Buffer de captura padrão é 1 (`Config.buffer_size`) para reduzir latência; aumente se a câmera não suportar.
+- HUD agora mostra: modo (baseline/análise), tempo de execução, score com cor por intensidade, tendência, mensagens interpretáveis, avisos (baixa luz/face fora do centro) e gráfico rolling de 30s.
 
 ### Calibração rápida
 1) Fique em repouso por ~15 s ao iniciar (baseline).

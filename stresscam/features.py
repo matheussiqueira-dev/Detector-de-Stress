@@ -14,15 +14,12 @@ def eye_aspect_ratio(landmarks, idx):
 
 
 def blink_rate(buffer_ear, fps, thresh):
-    blinks = 0
-    open_state = True
-    for v in buffer_ear:
-        if v < thresh and open_state:
-            blinks += 1
-            open_state = False
-        if v >= thresh:
-            open_state = True
-    minutes = len(buffer_ear) / fps / 60
+    if len(buffer_ear) == 0:
+        return 0.0
+    closed = buffer_ear < thresh
+    # transições open -> closed contam piscadas; diff evita loop python
+    blinks = np.count_nonzero(np.diff(closed.astype(np.int8)) == 1)
+    minutes = len(buffer_ear) / (fps * 60.0)
     return blinks / minutes if minutes > 0 else 0.0
 
 
@@ -42,3 +39,17 @@ def pupil_area(landmarks):
     w = pts[:, 0].max() - pts[:, 0].min()
     h = pts[:, 1].max() - pts[:, 1].min()
     return float(w * h)
+
+
+def pack_features(feats):
+    """
+    Empacota o dicionário de features em vetor 1D pronto para o modelo.
+    Mantido aqui para reutilização em app e dashboard.
+    """
+    return np.hstack([
+        feats["blink_rate"],
+        feats["ear_mean"], feats["ear_std"],
+        feats["tension_mean"], feats["tension_std"],
+        feats["pupil_mean"], feats["pupil_std"],
+        feats["entropy_tension"],
+    ])

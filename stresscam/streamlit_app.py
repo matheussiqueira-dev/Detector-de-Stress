@@ -9,21 +9,11 @@ import pandas as pd
 import streamlit as st
 
 from .config import Config
-from .video import VideoStream, FaceProcessor, normalize_lighting
-from .features import eye_aspect_ratio, facial_tension, pupil_area, EAR_LEFT, EAR_RIGHT
+from .video import VideoStream, FaceProcessor, preprocess_frame
+from .features import eye_aspect_ratio, facial_tension, pupil_area, pack_features, EAR_LEFT, EAR_RIGHT
 from .temporal import TemporalBuffer, BaselineNormalizer
 from .model import StressRegressor
 from .server import ScoreServer
-
-
-def pack_features(feats):
-    return np.hstack([
-        feats["blink_rate"],
-        feats["ear_mean"], feats["ear_std"],
-        feats["tension_mean"], feats["tension_std"],
-        feats["pupil_mean"], feats["pupil_std"],
-        feats["entropy_tension"]
-    ])
 
 
 def init_state():
@@ -87,6 +77,8 @@ def main():
         cfg.blink_ear_thresh = st.slider("Threshold EAR (blink)", 0.15, 0.35, cfg.blink_ear_thresh, 0.01)
         cfg.ema_alpha = st.slider("Suavização EMA", 0.05, 0.5, cfg.ema_alpha, 0.01)
         cfg.model_type = st.selectbox("Modelo", ["sgd", "rf"], index=0 if cfg.model_type == "sgd" else 1)
+        cfg.mirror = st.checkbox("Espelhar câmera", value=cfg.mirror)
+        cfg.normalize_light = st.checkbox("Equalizar iluminação (CLAHE)", value=cfg.normalize_light)
 
     frame_ph = col1.empty()
     chart_ph = col1.empty()
@@ -95,7 +87,7 @@ def main():
 
     while st.session_state.running:
         frame = st.session_state.stream.read()
-        frame = normalize_lighting(frame, cfg)
+        frame = preprocess_frame(frame, cfg)
 
         results = st.session_state.face.detect(frame)
         lms = st.session_state.face.landmarks(results)
