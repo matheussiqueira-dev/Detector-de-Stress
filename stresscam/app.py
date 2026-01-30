@@ -1,3 +1,4 @@
+import os
 import time
 import numpy as np
 import cv2
@@ -24,6 +25,17 @@ def pack_features(feats):
 
 def run(cfg: Config | None = None):
     cfg = cfg or Config()
+    # permite override via env: STRESSCAM_DEVICE (string) ou STRESSCAM_DEVICE_INDEX
+    env_device = os.getenv("STRESSCAM_DEVICE")
+    if env_device:
+        cfg.device_name = env_device if env_device.startswith("video=") else f"video={env_device}"
+    env_index = os.getenv("STRESSCAM_DEVICE_INDEX")
+    if env_index:
+        try:
+            cfg.device_index = int(env_index)
+            cfg.device_name = None
+        except ValueError:
+            pass
     stream = VideoStream(cfg)
     face = FaceProcessor(cfg)
     buf = TemporalBuffer(cfg)

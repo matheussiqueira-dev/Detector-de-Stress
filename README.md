@@ -17,6 +17,12 @@ streamlit run stresscam/streamlit_app.py
 # se streamlit.exe não estiver no PATH: .venv\Scripts\streamlit run stresscam/streamlit_app.py
 ```
 
+### Escolher a webcam (BRIO 305)
+- Opção 1 (nome da câmera, Windows/DirectShow):  
+  `set STRESSCAM_DEVICE=video=BRIO 305` e depois `python -m stresscam.app`
+- Opção 2 (índice OpenCV): edite `device_index` em `stresscam/config.py` ou exporte `STRESSCAM_DEVICE_INDEX=1`.
+- O código falha ao iniciar se não conseguir abrir a câmera, para evitar usar a câmera errada.
+
 ### API externa (REST/WebSocket)
 - REST: `GET http://localhost:8000/score` → `{"score":0.53,"trend":-0.01,"ts":1738280000.1}`
 - WebSocket: `ws://localhost:8765/` envia o mesmo JSON periodicamente (5 Hz). Útil para dashboards externos.

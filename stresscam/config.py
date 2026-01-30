@@ -6,6 +6,7 @@ class Config:
     # captura
     fps: int = 30
     device_index: int = 0
+    device_name: str | None = None  # ex: "video=BRIO 305" (DirectShow)
     frame_width: int | None = None
     frame_height: int | None = None
 

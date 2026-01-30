@@ -10,12 +10,15 @@ from .config import Config
 
 class VideoStream:
     def __init__(self, cfg: Config):
-        self.cap = cv2.VideoCapture(cfg.device_index, cv2.CAP_DSHOW)
+        source = cfg.device_name if cfg.device_name else cfg.device_index
+        self.cap = cv2.VideoCapture(source, cv2.CAP_DSHOW)
         self.cap.set(cv2.CAP_PROP_FPS, cfg.fps)
         if cfg.frame_width:
             self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, cfg.frame_width)
         if cfg.frame_height:
             self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cfg.frame_height)
+        if not self.cap.isOpened():
+            raise RuntimeError(f"Não consegui abrir a câmera: {source}")
 
     def read(self):
         ok, frame = self.cap.read()
