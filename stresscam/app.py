@@ -8,6 +8,8 @@ from .features import eye_aspect_ratio, facial_tension, pupil_area, EAR_LEFT, EA
 from .temporal import TemporalBuffer, BaselineNormalizer
 from .model import StressRegressor
 from .viz import draw_hud
+from .server import ScoreServer
+from .diag import DiagLogger
 
 
 def pack_features(feats):
@@ -27,6 +29,10 @@ def run(cfg: Config | None = None):
     buf = TemporalBuffer(cfg)
     base = BaselineNormalizer()
     model = StressRegressor(cfg)
+    diag = DiagLogger(cfg.log_interval_sec) if cfg.log_diag else None
+    server = ScoreServer(cfg.http_port, cfg.ws_port, cfg.broadcast_hz) if cfg.enable_server else None
+    if server:
+        server.start()
 
     t0 = time.time()
     prev_score = 0.5
@@ -35,6 +41,7 @@ def run(cfg: Config | None = None):
         while True:
             frame = stream.read()
             frame = normalize_lighting(frame, cfg)
+            loop_start = time.time()
 
             results = face.detect(frame)
             lms = face.landmarks(results)
@@ -67,15 +74,22 @@ def run(cfg: Config | None = None):
                         buf.score_ema = buf.score_ema + cfg.ema_alpha * (score_raw - buf.score_ema)
                     trend = buf.score_ema - prev_score
                     prev_score = buf.score_ema
+                    if server:
+                        server.update(buf.score_ema, trend)
                     frame = draw_hud(frame, buf.score_ema, trend, bbox)
             else:
                 cv2.putText(frame, "Face nao detectada", (20, 40),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
 
             cv2.imshow("StressCam", frame)
+            infer_ms = (time.time() - loop_start)
+            if diag:
+                diag.tick(infer_ms)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
     finally:
+        if server:
+            server.stop()
         stream.release()
         cv2.destroyAllWindows()
 

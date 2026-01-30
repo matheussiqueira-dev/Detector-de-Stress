@@ -13,6 +13,7 @@ from .video import VideoStream, FaceProcessor, normalize_lighting
 from .features import eye_aspect_ratio, facial_tension, pupil_area, EAR_LEFT, EAR_RIGHT
 from .temporal import TemporalBuffer, BaselineNormalizer
 from .model import StressRegressor
+from .server import ScoreServer
 
 
 def pack_features(feats):
@@ -38,6 +39,12 @@ def init_state():
         st.session_state.base = BaselineNormalizer()
     if "model" not in st.session_state:
         st.session_state.model = StressRegressor(st.session_state.cfg)
+    if "server" not in st.session_state:
+        st.session_state.server = ScoreServer(
+            st.session_state.cfg.http_port,
+            st.session_state.cfg.ws_port,
+            st.session_state.cfg.broadcast_hz,
+        ) if st.session_state.cfg.enable_server else None
     if "running" not in st.session_state:
         st.session_state.running = False
     if "t0" not in st.session_state:
@@ -49,6 +56,8 @@ def init_state():
 def start():
     st.session_state.running = True
     st.session_state.t0 = time.time()
+    if st.session_state.server:
+        st.session_state.server.start()
 
 
 def stop():
@@ -57,6 +66,8 @@ def stop():
         st.session_state.stream.release()
     except Exception:
         pass
+    if st.session_state.server:
+        st.session_state.server.stop()
 
 
 def main():
@@ -117,6 +128,9 @@ def main():
                     st.session_state.buf.score_ema = st.session_state.buf.score_ema + cfg.ema_alpha * (score_raw - st.session_state.buf.score_ema)
                 trend = st.session_state.buf.score_ema - prev_score
                 prev_score = st.session_state.buf.score_ema
+
+                if st.session_state.server:
+                    st.session_state.server.update(st.session_state.buf.score_ema, trend)
 
                 # anotar histórico para gráfico
                 st.session_state.history.append(

@@ -27,6 +27,16 @@ class Config:
     # baseline
     baseline_sec: int = 15
 
+    # servidor de score (REST/WS)
+    enable_server: bool = True
+    http_port: int = 8000
+    ws_port: int = 8765
+    broadcast_hz: float = 5.0
+
+    # diagnósticos
+    log_diag: bool = True
+    log_interval_sec: int = 5
+
     # modelo
     model_type: str = "sgd"  # "sgd" ou "rf"
 
