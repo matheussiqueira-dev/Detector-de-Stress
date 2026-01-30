@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 import mediapipe as mp
+import os
+import urllib.request
+import time
 
 from .config import Config
 
@@ -24,23 +27,74 @@ class VideoStream:
         self.cap.release()
 
 
+TASK_MODEL_URL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task"
+
+
+def _download_model(dst_path: str):
+    os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+    if not os.path.exists(dst_path):
+        urllib.request.urlretrieve(TASK_MODEL_URL, dst_path)
+    return dst_path
+
+
 class FaceProcessor:
     def __init__(self, cfg: Config):
-        self.face_mesh = mp.solutions.face_mesh.FaceMesh(
-            refine_landmarks=True, max_num_faces=1,
-            min_detection_confidence=0.6, min_tracking_confidence=0.6
-        )
-        self.smooth_bbox = None
         self.alpha = cfg.bbox_smooth_alpha
+        self.smooth_bbox = None
+        self.using_solutions = False
+
+        if hasattr(mp, "solutions"):
+            try:
+                self.face_mesh = mp.solutions.face_mesh.FaceMesh(
+                    refine_landmarks=True, max_num_faces=1,
+                    min_detection_confidence=0.6, min_tracking_confidence=0.6
+                )
+                self.using_solutions = True
+            except Exception:
+                self.using_solutions = False
+
+        if not self.using_solutions:
+            # fallback: MediaPipe Tasks FaceLandmarker
+            from mediapipe.tasks import python as mp_python
+            from mediapipe.tasks.python import vision as mp_vision
+            package_dir = os.path.dirname(mp.__file__)
+            target_abs = os.path.join(package_dir, "face_landmarker.task")
+            _download_model(target_abs)
+            with open(target_abs, "rb") as f:
+                model_bytes = f.read()
+            base_opts = mp_python.BaseOptions(model_asset_buffer=model_bytes)
+            opts = mp_vision.FaceLandmarkerOptions(
+                base_options=base_opts,
+                running_mode=mp_vision.RunningMode.VIDEO,
+                num_faces=1,
+                output_facial_transformation_matrixes=False,
+            )
+            self.landmarker = mp_vision.FaceLandmarker.create_from_options(opts)
+            self._ts_ms = 0
 
     def detect(self, frame):
+        if self.using_solutions:
+            rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            return self.face_mesh.process(rgb)
+        # tasks API
+        self._ts_ms += 33  # ~30 fps timestamp
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        return self.face_mesh.process(rgb)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+        result = self.landmarker.detect_for_video(mp_image, self._ts_ms)
+        return result
 
     def landmarks(self, results):
-        if not results.multi_face_landmarks:
+        if self.using_solutions:
+            if not results.multi_face_landmarks:
+                return None
+            return results.multi_face_landmarks[0]
+        # tasks result
+        if not results.face_landmarks:
             return None
-        return results.multi_face_landmarks[0]
+        class _Wrapper:
+            def __init__(self, lmks):
+                self.landmark = lmks
+        return _Wrapper(results.face_landmarks[0])
 
     def bbox_from_landmarks(self, landmarks, frame_shape):
         h, w, _ = frame_shape

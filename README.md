@@ -4,10 +4,11 @@ Pipeline modular para estimar estresse fisiológico em tempo real usando apenas 
 
 ## Rodar
 ```bash
-python -m venv .venv
+# recomendado Python 3.10 (MediaPipe solutions)
+py -3.10 -m venv .venv
 .venv\Scripts\activate
-pip install -r requirements.txt
-python -m stresscam.app  # tecla q para sair
+pip install -r requirements.txt  # instala mediapipe + opencv compatíveis
+python -m stresscam.app  # tecla q para sair (HUD OpenCV)
 ```
 
 ### Dashboard (Streamlit)
