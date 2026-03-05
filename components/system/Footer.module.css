@@ -1,0 +1,28 @@
+.footer {
+  position: relative;
+  z-index: 1;
+  padding: 20px 24px 28px;
+  background: linear-gradient(180deg, transparent, rgba(2, 10, 18, 0.72));
+}
+
+.text {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-heading), sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--encom-neon);
+  opacity: 0.9;
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+}
+
+.text a {
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.text a:hover {
+  border-color: rgba(0, 229, 255, 0.6);
+  text-shadow: 0 0 14px rgba(0, 229, 255, 0.8);
+}

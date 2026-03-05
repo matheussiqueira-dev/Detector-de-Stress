@@ -3,3 +3,7 @@
 __pycache__/
 .idea/
 .vscode/
+node_modules/
+.next/
+out/
+tsconfig.tsbuildinfo

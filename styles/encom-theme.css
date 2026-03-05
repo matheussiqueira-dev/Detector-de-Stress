@@ -1,0 +1,29 @@
+:root {
+  --encom-black: #000000;
+  --encom-surface: #05070a;
+  --encom-panel: #0a0f1a;
+
+  --encom-neon: #00e5ff;
+  --encom-blue: #00b8d9;
+  --encom-cyan: #33f3ff;
+  --encom-glow: #00ffff;
+
+  --encom-text-primary: #e6ffff;
+  --encom-text-secondary: #8fa6b2;
+
+  --encom-border: #00e5ff40;
+  --encom-grid: #00e5ff20;
+
+  --encom-radius: 20px;
+  --encom-radius-sm: 14px;
+  --encom-shadow-panel:
+    0 0 10px #00e5ff55,
+    inset 0 0 6px #00e5ff22;
+  --encom-shadow-card:
+    0 0 22px rgba(0, 229, 255, 0.18),
+    inset 0 0 18px rgba(0, 229, 255, 0.05);
+  --encom-gradient:
+    radial-gradient(circle at top, rgba(0, 229, 255, 0.18), transparent 32%),
+    linear-gradient(180deg, rgba(3, 11, 22, 0.94), rgba(0, 0, 0, 0.98));
+  --encom-grid-size: 40px;
+}

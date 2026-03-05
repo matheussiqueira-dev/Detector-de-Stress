@@ -1,0 +1,54 @@
+.panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--encom-border);
+  border-radius: var(--encom-radius);
+  background: rgba(10, 15, 26, 0.85);
+  box-shadow: var(--encom-shadow-panel);
+  backdrop-filter: blur(14px);
+  animation: encomFadeIn 0.6s ease both;
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(0, 229, 255, 0.12), transparent 24%),
+    linear-gradient(180deg, transparent 68%, rgba(0, 229, 255, 0.08));
+  pointer-events: none;
+}
+
+.panel::after {
+  content: "";
+  position: absolute;
+  inset: -140% 0 auto;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(0, 229, 255, 0.18), transparent);
+  opacity: 0.38;
+  animation: scanLine 8s linear infinite;
+  pointer-events: none;
+}
+
+.header {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  padding: 24px 24px 0;
+}
+
+.eyebrow {
+  color: var(--encom-cyan);
+  font-size: 0.76rem;
+}
+
+.title {
+  font-size: clamp(1rem, 2vw, 1.4rem);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  padding: 24px;
+}
