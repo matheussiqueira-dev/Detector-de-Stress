@@ -1,0 +1,89 @@
+/* AlertBanner — estilos dos banners de alerta temáticos ENCOM
+ * Author: Matheus Siqueira <https://www.matheussiqueira.dev/>
+ */
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--encom-radius-sm, 4px);
+  border-left: 3px solid transparent;
+  font-family: var(--font-ui, sans-serif);
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  animation: bannerSlideIn 0.22s ease-out;
+}
+
+@keyframes bannerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Severidade: info */
+.info {
+  background: rgba(0, 229, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.55);
+  color: var(--encom-neon, #00e5ff);
+}
+
+/* Severidade: warning */
+.warning {
+  background: rgba(255, 196, 0, 0.08);
+  border-color: rgba(255, 196, 0, 0.7);
+  color: #ffc400;
+}
+
+/* Severidade: critical */
+.critical {
+  background: rgba(255, 50, 50, 0.1);
+  border-color: rgba(255, 50, 50, 0.8);
+  color: #ff4d4d;
+  animation:
+    bannerSlideIn 0.22s ease-out,
+    criticalPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes criticalPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 50, 50, 0); }
+  50%       { box-shadow: 0 0 12px 2px rgba(255, 50, 50, 0.28); }
+}
+
+.icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.message {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.dismiss {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.55;
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 2px;
+  transition: opacity 0.15s;
+}
+
+.dismiss:hover {
+  opacity: 1;
+}
