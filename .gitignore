@@ -1,10 +1,54 @@
+# ── Python ────────────────────────────────────────────────────────────────
 .venv*/
 *.pyc
+*.pyo
+*.pyd
 __pycache__/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Pytest
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Mypy
+.mypy_cache/
+
+# ── Modelos treinados ─────────────────────────────────────────────────────
+models/
+
+# ── Gravações de sessão ───────────────────────────────────────────────────
+sessions/
+
+# ── Frames salvos (tecla 's') ─────────────────────────────────────────────
+frame_*.png
+
+# ── Logs ──────────────────────────────────────────────────────────────────
+*.log
+run*.err
+run*.log
+
+# ── Variáveis de ambiente ─────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── IDEs ──────────────────────────────────────────────────────────────────
 .idea/
 .vscode/
+*.swp
+*.swo
+
+# ── Node.js / Next.js ─────────────────────────────────────────────────────
 node_modules/
 .next/
 out/
 tsconfig.tsbuildinfo
 .vercel
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
