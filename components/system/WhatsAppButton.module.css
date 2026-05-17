@@ -27,7 +27,7 @@
 .label {
   font-family: var(--font-heading), sans-serif;
   font-size: 0.85rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0;
   color: #f7fff9;
 }
 

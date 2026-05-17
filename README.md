@@ -1,10 +1,10 @@
 # StressCam — Real-Time Physiological Stress Detector
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10--3.12-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-15-000000?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
-![Tests](https://img.shields.io/badge/Tests-58%20cases-brightgreen?style=flat-square)
+![Tests](https://img.shields.io/badge/Tests-95%20cases-brightgreen?style=flat-square)
 
 Pipeline modular de visão computacional que estima stress fisiológico em tempo real usando apenas uma webcam comum. Combina um backend Python de alta performance com um dashboard Next.js de tema ENCOM/Tron, exponível via REST e WebSocket.
 
@@ -95,9 +95,11 @@ Pipeline modular de visão computacional que estima stress fisiológico em tempo
 
 | Requisito | Versão Mínima |
 |-----------|--------------|
-| Python    | 3.10         |
+| Python    | 3.10 a 3.12  |
 | Node.js   | 18           |
 | Webcam    | Qualquer câmera compatível com OpenCV |
+
+> O backend foi validado com Python 3.12. A versão fixada do MediaPipe (`0.10.20`) distribui wheels oficiais para CPython 3.9 a 3.12; use 3.10-3.12 para evitar falhas de instalação em ambientes locais.
 
 ### Backend Python
 
@@ -106,9 +108,9 @@ Pipeline modular de visão computacional que estima stress fisiológico em tempo
 git clone https://github.com/matheussiqueira-dev/Detector-de-Stress.git
 cd Detector-de-Stress
 
-# 2. Crie e ative o ambiente virtual (Python 3.10 recomendado)
-py -3.10 -m venv .venv          # Windows
-python3.10 -m venv .venv        # Linux/macOS
+# 2. Crie e ative o ambiente virtual (Python 3.12 recomendado)
+py -3.12 -m venv .venv          # Windows
+python3.12 -m venv .venv        # Linux/macOS
 source .venv/bin/activate       # Linux/macOS
 .venv\Scripts\activate          # Windows
 
@@ -262,9 +264,13 @@ pytest --cov=stresscam --cov-report=term-missing
 
 # Módulo específico
 pytest tests/test_server.py -v
+
+# Frontend
+npm run typecheck
+npm run build
 ```
 
-**Cobertura atual:** 58 casos de teste distribuídos em 7 módulos.
+**Cobertura atual:** 95 casos de teste distribuídos em 7 módulos.
 
 | Módulo | Casos | Cobertura |
 |--------|-------|-----------|
@@ -320,7 +326,7 @@ Detector-de-Stress/
 ├── styles/
 │   └── encom-theme.css
 │
-├── tests/                      # Suite pytest (58 casos)
+├── tests/                      # Suite pytest (95 casos)
 │   ├── test_config.py
 │   ├── test_features.py
 │   ├── test_logger.py

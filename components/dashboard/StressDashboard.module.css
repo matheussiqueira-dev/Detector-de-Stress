@@ -23,7 +23,7 @@
 }
 
 .title {
-  font-size: clamp(2.6rem, 7vw, 5.8rem);
+  font-size: 4.8rem;
   line-height: 0.94;
   text-shadow: 0 0 24px rgba(0, 229, 255, 0.38);
 }
@@ -83,7 +83,7 @@
 
 .ringValue {
   font-family: var(--font-heading), sans-serif;
-  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-size: 3.6rem;
   color: var(--encom-neon);
   text-shadow: 0 0 16px rgba(0, 229, 255, 0.58);
 }
@@ -106,7 +106,7 @@
 .statValue {
   font-family: var(--font-ui), sans-serif;
   font-size: 1.04rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   color: var(--encom-text-primary);
 }
 
@@ -234,11 +234,19 @@
   .heroCopy {
     min-height: auto;
   }
+
+  .title {
+    font-size: 3.6rem;
+  }
 }
 
 @media (max-width: 640px) {
   .title {
     font-size: 2.4rem;
+  }
+
+  .ringValue {
+    font-size: 2.8rem;
   }
 
   .lead {

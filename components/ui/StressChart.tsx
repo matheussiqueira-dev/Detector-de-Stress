@@ -8,7 +8,7 @@
  */
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo, type CSSProperties } from "react";
 
 import styles from "./StressChart.module.css";
 
@@ -34,9 +34,6 @@ function scoreToColor(score: number): string {
   return "#ff1744";                      // vermelho
 }
 
-/** Gera um id único para gradientes SVG. */
-let _gradientCounter = 0;
-
 /**
  * Componente de gráfico SVG para histórico de stress.
  */
@@ -45,8 +42,11 @@ export function StressChart({
   windowSec = 300,
   height = 120,
 }: StressChartProps) {
-  const gradientId = useMemo(() => `sg-${++_gradientCounter}`, []);
-  const areaId = useMemo(() => `sa-${_gradientCounter}`, []);
+  const chartId = useId().replace(/:/g, "");
+  const gradientId = `sg-${chartId}`;
+  const areaId = `sa-${chartId}`;
+  const glowId = `glow-${chartId}`;
+  const wrapperStyle = { "--chart-height": `${height}px` } as CSSProperties;
 
   const chartData = useMemo(() => {
     if (data.length < 2) return null;
@@ -80,11 +80,15 @@ export function StressChart({
     // Score atual (último ponto) para a cor dominante
     const lastScore = visible[visible.length - 1].score;
 
-    return { linePoints, areaPoints, lastScore, points, tMin, tMax, tSpan };
+    return { linePoints, areaPoints, lastScore, points };
   }, [data, windowSec]);
 
   return (
-    <div className={styles.wrapper} aria-label="Gráfico de histórico de stress">
+    <div
+      className={styles.wrapper}
+      style={wrapperStyle}
+      aria-label="Gráfico de histórico de stress"
+    >
       {/* Eixo Y labels */}
       <div className={styles.yLabels} aria-hidden="true">
         <span>100%</span>
@@ -117,6 +121,14 @@ export function StressChart({
             />
             <stop offset="100%" stopColor="transparent" stopOpacity="0" />
           </linearGradient>
+
+          <filter id={glowId} x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="1.2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
         {/* Grade horizontal */}
@@ -173,7 +185,7 @@ export function StressChart({
                 cy={chartData.points[chartData.points.length - 1].y}
                 r="1.8"
                 fill={scoreToColor(chartData.lastScore)}
-                filter="url(#glow)"
+                filter={`url(#${glowId})`}
               />
             )}
           </>

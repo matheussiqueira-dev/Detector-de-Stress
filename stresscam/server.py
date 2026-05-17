@@ -171,7 +171,6 @@ class ScoreServer:
             def _stop() -> None:
                 if self._stop_future and not self._stop_future.done():
                     self._stop_future.set_result(None)
-                self._loop.stop()  # type: ignore[union-attr]
 
             self._loop.call_soon_threadsafe(_stop)
 
@@ -221,7 +220,10 @@ class ScoreServer:
         def runner() -> None:
             self._loop = asyncio.new_event_loop()
             asyncio.set_event_loop(self._loop)
-            self._loop.run_until_complete(self._ws_main())
+            try:
+                self._loop.run_until_complete(self._ws_main())
+            finally:
+                self._loop.close()
 
         thread = threading.Thread(target=runner, name="stresscam-ws", daemon=True)
         thread.start()

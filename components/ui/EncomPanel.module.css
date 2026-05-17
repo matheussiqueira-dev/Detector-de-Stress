@@ -44,11 +44,25 @@
 }
 
 .title {
-  font-size: clamp(1rem, 2vw, 1.4rem);
+  font-size: 1.25rem;
 }
 
 .content {
   position: relative;
   z-index: 1;
   padding: 24px;
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 18px 18px 0;
+  }
+
+  .title {
+    font-size: 1.05rem;
+  }
+
+  .content {
+    padding: 18px;
+  }
 }

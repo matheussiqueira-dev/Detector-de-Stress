@@ -31,7 +31,7 @@ type ConnectionStatus = "connecting" | "online" | "offline" | "demo";
 
 // ── Constantes ─────────────────────────────────────────────────────────────
 
-const DEMO_SNAPSHOT: ScorePayload = { score: 0.52, trend: 0.012, ts: Date.now() / 1000 };
+const DEMO_BASE_SCORE = 0.43;
 const POLL_INTERVAL_MS = 2000;
 const HISTORY_WINDOW_SEC = 300; // 5 minutos
 const WS_RECONNECT_DELAY_MS = 3000;
@@ -48,7 +48,10 @@ const ALERT_COOLDOWN_MS = 30_000;
 function resolveApiUrl(): string {
   const explicitUrl = process.env.NEXT_PUBLIC_STRESSCAM_API_URL;
   if (explicitUrl) return explicitUrl;
-  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+  if (
+    typeof window !== "undefined" &&
+    ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname)
+  ) {
     return "http://localhost:8000";
   }
   return "";
@@ -81,6 +84,17 @@ function generateAlertId(): string {
   return `alert-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+function createDemoSnapshot(previous: ScorePayload | null): ScorePayload {
+  const ts = Date.now() / 1000;
+  const wave = Math.sin(ts / 7) * 0.05 + Math.sin(ts / 17) * 0.02;
+  const score = clamp(DEMO_BASE_SCORE + wave, 0.31, 0.49);
+  return {
+    score,
+    trend: previous ? score - previous.score : 0.012,
+    ts,
+  };
+}
+
 // ── Hook: dados de stress ──────────────────────────────────────────────────
 
 function useStressData(apiUrl: string, wsUrl: string) {
@@ -89,10 +103,16 @@ function useStressData(apiUrl: string, wsUrl: string) {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const demoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const shouldReconnectRef = useRef(false);
+  const hasLiveDataRef = useRef(false);
 
-  const applySnapshot = useCallback((data: ScorePayload) => {
+  const applySnapshot = useCallback((data: ScorePayload, nextStatus: ConnectionStatus = "online") => {
+    if (nextStatus === "online") {
+      hasLiveDataRef.current = true;
+    }
     setSnapshot(data);
-    setStatus("online");
+    setStatus(nextStatus);
   }, []);
 
   // ── WebSocket ────────────────────────────────────────────────────────
@@ -117,8 +137,10 @@ function useStressData(apiUrl: string, wsUrl: string) {
       ws.onerror = () => setStatus("offline");
 
       ws.onclose = () => {
-        setStatus("offline");
-        reconnectTimerRef.current = setTimeout(connectWs, WS_RECONNECT_DELAY_MS);
+        setStatus(hasLiveDataRef.current ? "offline" : "demo");
+        if (shouldReconnectRef.current) {
+          reconnectTimerRef.current = setTimeout(connectWs, WS_RECONNECT_DELAY_MS);
+        }
       };
 
       return true;
@@ -133,13 +155,21 @@ function useStressData(apiUrl: string, wsUrl: string) {
     let cancelled = false;
 
     const poll = async () => {
+      if (wsRef.current?.readyState === WebSocket.OPEN) return;
+
       try {
         const res = await fetch(`${apiUrl}/score`, { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as ScorePayload;
         if (!cancelled) applySnapshot(data);
       } catch {
-        if (!cancelled) setStatus("offline");
+        if (cancelled) return;
+        if (hasLiveDataRef.current) {
+          setStatus("offline");
+          return;
+        }
+        setStatus("demo");
+        setSnapshot((prev) => createDemoSnapshot(prev));
       }
     };
 
@@ -147,31 +177,38 @@ function useStressData(apiUrl: string, wsUrl: string) {
     pollingTimerRef.current = setInterval(poll, POLL_INTERVAL_MS);
     return () => {
       cancelled = true;
+      if (pollingTimerRef.current) clearInterval(pollingTimerRef.current);
     };
   }, [apiUrl, applySnapshot]);
 
   useEffect(() => {
     if (!apiUrl) {
-      setSnapshot(DEMO_SNAPSHOT);
       setStatus("demo");
-      return;
+      setSnapshot((prev) => createDemoSnapshot(prev));
+      demoTimerRef.current = setInterval(() => {
+        setSnapshot((prev) => createDemoSnapshot(prev));
+      }, POLL_INTERVAL_MS);
+
+      return () => {
+        if (demoTimerRef.current) clearInterval(demoTimerRef.current);
+      };
     }
 
-    const wsConnected = connectWs();
-    if (!wsConnected) {
-      startPolling();
-    }
+    shouldReconnectRef.current = true;
+    const stopPolling = startPolling();
+    connectWs();
 
     return () => {
+      shouldReconnectRef.current = false;
       wsRef.current?.close();
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
-      if (pollingTimerRef.current) clearInterval(pollingTimerRef.current);
+      stopPolling?.();
+      if (demoTimerRef.current) clearInterval(demoTimerRef.current);
     };
   }, [apiUrl, connectWs, startPolling]);
 
   return { snapshot, status };
 }
-
 // ── Hook: histórico ────────────────────────────────────────────────────────
 
 function useStressHistory(snapshot: ScorePayload | null): HistoryPoint[] {
@@ -256,7 +293,7 @@ export function StressDashboard() {
   const { snapshot, status } = useStressData(apiUrl, wsUrl);
   const history = useStressHistory(snapshot);
 
-  const score = clamp(snapshot?.score ?? DEMO_SNAPSHOT.score);
+  const score = clamp(snapshot?.score ?? DEMO_BASE_SCORE);
   const trend = snapshot?.trend ?? 0;
   const percent = Math.round(score * 100);
 
@@ -304,7 +341,7 @@ export function StressDashboard() {
           </p>
           <div className={styles.actions}>
             <TronButton
-              disabled={!apiUrl}
+              disabled={!apiUrl || status !== "online"}
               onClick={() => window.open(`${apiUrl}/score`, "_blank", "noopener,noreferrer")}
             >
               Open API Feed

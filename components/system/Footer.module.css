@@ -1,28 +1,75 @@
 .footer {
   position: relative;
   z-index: 1;
-  padding: 20px 24px 28px;
-  background: linear-gradient(180deg, transparent, rgba(2, 10, 18, 0.72));
+  padding: 24px 24px 32px;
+  background:
+    linear-gradient(180deg, transparent, rgba(2, 10, 18, 0.86)),
+    linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.08), transparent);
+}
+
+.inner {
+  display: flex;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
 }
 
 .text {
   margin: 0;
-  text-align: center;
   font-family: var(--font-heading), sans-serif;
   font-size: 0.82rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--encom-neon);
-  opacity: 0.9;
-  text-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+  letter-spacing: 0;
+  color: var(--encom-text-secondary);
 }
 
-.text a {
+.name,
+.site {
   border-bottom: 1px solid transparent;
-  transition: border-color 0.2s ease, text-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    text-shadow 0.2s ease;
 }
 
-.text a:hover {
+.name {
+  color: var(--encom-neon);
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.58);
+}
+
+.site {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--encom-cyan);
+}
+
+.name:hover,
+.site:hover {
   border-color: rgba(0, 229, 255, 0.6);
+  color: var(--encom-glow);
   text-shadow: 0 0 14px rgba(0, 229, 255, 0.8);
+}
+
+@media (max-width: 720px) {
+  .footer {
+    padding: 24px 72px 28px 20px;
+  }
+
+  .inner {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .text {
+    font-size: 0.72rem;
+    line-height: 1.6;
+  }
+
+  .site {
+    font-size: 0.84rem;
+  }
 }

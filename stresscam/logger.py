@@ -32,6 +32,13 @@ _FORMATTER = logging.Formatter(
 _initialized = False
 
 
+def _close_handlers(logger: logging.Logger) -> None:
+    """Remove e fecha handlers para liberar arquivos em Windows e testes."""
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+        handler.close()
+
+
 def setup_logging(
     log_file: str | Path = "stresscam.log",
     level: str = "INFO",
@@ -59,7 +66,7 @@ def setup_logging(
 
     # Evita handlers duplicados em reentradas (ex: testes)
     if root_logger.handlers:
-        root_logger.handlers.clear()
+        _close_handlers(root_logger)
 
     # Handler de arquivo com rotação
     try:
@@ -68,6 +75,7 @@ def setup_logging(
             maxBytes=max_bytes,
             backupCount=backup_count,
             encoding="utf-8",
+            delay=True,
         )
         file_handler.setFormatter(_FORMATTER)
         file_handler.setLevel(resolved_level)
@@ -113,5 +121,5 @@ def reset_logging() -> None:
     """Remove todos os handlers e reseta o estado (útil em testes)."""
     global _initialized
     root_logger = logging.getLogger()
-    root_logger.handlers.clear()
+    _close_handlers(root_logger)
     _initialized = False
