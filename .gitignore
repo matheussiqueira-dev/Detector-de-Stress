@@ -44,3 +44,5 @@ next-env.d.ts
 # local Codex verification artifacts
 .codex-dev-server*.log
 .codex-screenshots/
+
+.vercel
